@@ -4,6 +4,7 @@ using Amazon.Rekognition;
 using Amazon.S3;
 using Amazon.SimpleEmailV2;
 using Amazon.Textract;
+using Amazon.XRay.Recorder.Handlers.AwsSdk;
 using Microsoft.Extensions.DependencyInjection;
 using VerificationEngine.Services.Configuration;
 using VerificationEngine.Services.Documents;
@@ -24,6 +25,14 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddVerificationEngineServices(this IServiceCollection services)
     {
+        // Every AWS Lambda function in this project has X-Ray active tracing turned on
+        // (see the Tracing = Tracing.ACTIVE CDK settings) - that alone captures each
+        // invocation as a trace segment, but this line additionally instruments the AWS
+        // SDK clients constructed below so calls to DynamoDB, S3, Rekognition, Textract,
+        // SES, and EventBridge each show up as their own subsegment with their own
+        // duration, rather than the whole request looking like one opaque block of time.
+        AWSSDKHandler.RegisterXRayForAllServices();
+
         var options = EngineOptions.FromEnvironment();
         services.AddSingleton(options);
 

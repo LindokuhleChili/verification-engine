@@ -22,6 +22,7 @@ public sealed partial class VerificationEngineStack
             Runtime = Runtime.DOTNET_8,
             Architecture = Architecture.X86_64,
             MemorySize = 512,
+            Tracing = Tracing.ACTIVE,
             // API Gateway itself times out an integration at 30s; leaving this just under
             // that means a slow Lambda produces our own JSON error, not API Gateway's.
             Timeout = Duration.Seconds(29),
@@ -55,7 +56,7 @@ public sealed partial class VerificationEngineStack
     /// current aws-cdk-lib version. The L1 resources are the stable, permanent surface
     /// underneath them and describe exactly the same infrastructure.
     /// </summary>
-    private string BuildHttpApi(Function apiFunction)
+    private (string ApiUrl, string ApiId) BuildHttpApi(Function apiFunction)
     {
         var httpApi = new CfnApi(this, "HttpApi", new CfnApiProps
         {
@@ -146,7 +147,7 @@ public sealed partial class VerificationEngineStack
             SourceArn = $"arn:aws:execute-api:{Region}:{Account}:{httpApi.AttrApiId}/*/*"
         });
 
-        return httpApi.AttrApiEndpoint;
+        return (httpApi.AttrApiEndpoint, httpApi.AttrApiId);
     }
 
     /// <summary>Rekognition and Textract have no resource-level permissions to scope to - "*" is the only option AWS supports here.</summary>

@@ -24,7 +24,7 @@ public sealed partial class VerificationEngineStack
     /// unpredictable times - polling a cheap read is simpler to reason about here than
     /// wiring a task token through every one of those endpoints for a project this size.
     /// </summary>
-    private void BuildDeceasedEstateWorkflow(IEventBus eventBus)
+    private StateMachine BuildDeceasedEstateWorkflow(IEventBus eventBus)
     {
         var checkParties = new Function(this, "CheckEstatePartiesFunction", new FunctionProps
         {
@@ -32,6 +32,7 @@ public sealed partial class VerificationEngineStack
             Runtime = Runtime.DOTNET_8,
             Architecture = Architecture.X86_64,
             MemorySize = 256,
+            Tracing = Tracing.ACTIVE,
             Timeout = Duration.Seconds(10),
             Handler = "VerificationEngine.Workers::VerificationEngine.Workers.Functions.CheckEstatePartiesVerifiedFunction::FunctionHandler",
             Code = DotnetLambdaAsset.FromProject("VerificationEngine.Workers"),
@@ -45,6 +46,7 @@ public sealed partial class VerificationEngineStack
             Runtime = Runtime.DOTNET_8,
             Architecture = Architecture.X86_64,
             MemorySize = 256,
+            Tracing = Tracing.ACTIVE,
             Timeout = Duration.Seconds(10),
             Handler = "VerificationEngine.Workers::VerificationEngine.Workers.Functions.MarkEstateClaimVerifiedFunction::FunctionHandler",
             Code = DotnetLambdaAsset.FromProject("VerificationEngine.Workers"),
@@ -59,6 +61,7 @@ public sealed partial class VerificationEngineStack
             Runtime = Runtime.DOTNET_8,
             Architecture = Architecture.X86_64,
             MemorySize = 256,
+            Tracing = Tracing.ACTIVE,
             Timeout = Duration.Seconds(10),
             Handler = "VerificationEngine.Workers::VerificationEngine.Workers.Functions.MarkEstateClaimActionNeededFunction::FunctionHandler",
             Code = DotnetLambdaAsset.FromProject("VerificationEngine.Workers"),
@@ -142,6 +145,8 @@ public sealed partial class VerificationEngineStack
                 })
             ]
         });
+
+        return stateMachine;
     }
 
     private Dictionary<string, string> WorkerEnvironment() => new()

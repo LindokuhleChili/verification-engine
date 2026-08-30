@@ -45,12 +45,13 @@ public sealed partial class VerificationEngineStack : Stack
         (_userPool, _userPoolClient) = BuildAuth();
 
         var apiFunction = BuildApiFunction();
-        var apiUrl = BuildHttpApi(apiFunction);
+        var (apiUrl, httpApiId) = BuildHttpApi(apiFunction);
 
-        var eventBus = BuildMessaging(out var notifierFunction);
-        BuildDeceasedEstateWorkflow(eventBus);
+        var eventBus = BuildMessaging(out var notifierFunction, out var notificationQueue, out var notificationDlq);
+        var stateMachine = BuildDeceasedEstateWorkflow(eventBus);
 
         BuildSesIdentity();
+        BuildMonitoring(apiFunction, notifierFunction, notificationQueue, notificationDlq, stateMachine, httpApiId);
 
         EmitOutputs(apiUrl);
     }

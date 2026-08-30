@@ -21,17 +21,17 @@ public sealed partial class VerificationEngineStack
     /// EventBridge-to-Lambda target would drop it after EventBridge's own limited
     /// retry policy expires, with less visibility into the failure.
     /// </summary>
-    private IEventBus BuildMessaging(out Function notifierFunction)
+    private IEventBus BuildMessaging(out Function notifierFunction, out Queue queue, out Queue deadLetterQueue)
     {
         var eventBus = Amazon.CDK.AWS.Events.EventBus.FromEventBusName(this, "DefaultBus", "default");
 
-        var deadLetterQueue = new Queue(this, "ClaimNotificationsDlq", new QueueProps
+        deadLetterQueue = new Queue(this, "ClaimNotificationsDlq", new QueueProps
         {
             QueueName = "verification-engine-claim-notifications-dlq",
             RetentionPeriod = Duration.Days(14)
         });
 
-        var queue = new Queue(this, "ClaimNotificationsQueue", new QueueProps
+        queue = new Queue(this, "ClaimNotificationsQueue", new QueueProps
         {
             QueueName = "verification-engine-claim-notifications",
             VisibilityTimeout = Duration.Seconds(30),
@@ -60,6 +60,7 @@ public sealed partial class VerificationEngineStack
             Runtime = Runtime.DOTNET_8,
             Architecture = Architecture.X86_64,
             MemorySize = 256,
+            Tracing = Tracing.ACTIVE,
             Timeout = Duration.Seconds(15),
             Handler = "VerificationEngine.Workers::VerificationEngine.Workers.Functions.ClaimSubmittedNotifierFunction::FunctionHandler",
             Code = DotnetLambdaAsset.FromProject("VerificationEngine.Workers"),
