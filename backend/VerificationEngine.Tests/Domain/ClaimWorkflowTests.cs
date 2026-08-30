@@ -51,7 +51,21 @@ public sealed class ClaimWorkflowTests
     }
 
     [Fact]
-    public void CanSubmit_TrueOnlyWhenEveryRequiredStepPassed()
+    public void CanSubmit_TrueWhenEveryStepExceptSignaturePassed()
+    {
+        var actual = new Dictionary<VerificationStepName, VerificationStepStatus>
+        {
+            [VerificationStepName.IdentityBiometric] = VerificationStepStatus.Passed,
+            [VerificationStepName.BankAccount] = VerificationStepStatus.Passed
+            // Signature step is entirely absent - submitting is what should trigger
+            // verification, not something that waits until after signing.
+        };
+
+        Assert.True(ClaimWorkflow.CanSubmit(ClaimType.LivingShareholder, actual));
+    }
+
+    [Fact]
+    public void CanSubmit_IgnoresSignatureEvenIfAlreadyPassed()
     {
         var actual = new Dictionary<VerificationStepName, VerificationStepStatus>
         {

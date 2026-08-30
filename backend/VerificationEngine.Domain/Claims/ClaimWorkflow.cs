@@ -52,8 +52,19 @@ public static class ClaimWorkflow
         _ => step.ToString()
     };
 
-    /// <summary>A claim may only be submitted once every required step has passed.</summary>
+    /// <summary>
+    /// A claim may be submitted once every required step except signing has passed.
+    /// Signature is deliberately excluded: submitting is what triggers the async side
+    /// of verification (the notification queue, and for a Deceased Estate claim, the
+    /// Step Functions workflow that waits on the second party and the courier) - it has
+    /// to be possible to submit *before* signing, or that orchestration would only ever
+    /// start after the claimant already signed, which is backwards. The actual gate
+    /// against signing too early lives independently in the signature endpoint itself
+    /// (see VerificationEndpoints.SubmitSignature), which checks every other required
+    /// step directly rather than relying on this claim-level flag.
+    /// </summary>
     public static bool CanSubmit(ClaimType claimType, IReadOnlyDictionary<VerificationStepName, VerificationStepStatus> actual) =>
-        RequiredSteps(claimType).All(step =>
-            actual.TryGetValue(step, out var status) && status == VerificationStepStatus.Passed);
+        RequiredSteps(claimType)
+            .Where(step => step != VerificationStepName.Signature)
+            .All(step => actual.TryGetValue(step, out var status) && status == VerificationStepStatus.Passed);
 }
