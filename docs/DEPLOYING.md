@@ -67,22 +67,44 @@ sandbox, every recipient must be individually verified, not just the sender:
 2. For every email address you'll test with (your own claimant/executor test
    accounts), add and verify it the same way.
 
-## Connect Amplify Hosting to GitHub (the one manual console step)
+## Create Amplify Hosting via the console (the one manual step)
 
-The CDK stack creates the Amplify **App** and its `main` **Branch**, but not
-the GitHub connection itself. Amplify's current, non-deprecated way to
-connect a repo is its GitHub App integration, which requires an interactive
-OAuth authorization in the console — there's no way to script this step
-(the older personal-access-token flow CDK's constructs still technically
-support is the flow GitHub itself has deprecated for new connections).
+Amplify Hosting is the one piece of this project **not** defined in CDK.
+An earlier version of the stack did create the Amplify App and Branch as
+CDK resources (`CfnApp`/`CfnBranch`), but that turned out to be a dead end:
+Amplify's current, non-deprecated way to connect a repo is its GitHub App
+integration, and that integration can only be attached to an app **at
+creation time**, through Amplify's own "New app" console wizard — there is
+no way to attach it to a pre-existing app afterward, whether that app was
+created by CDK or anything else. (The older personal-access-token flow that
+`CfnApp` still technically supports is the flow GitHub has deprecated for
+new connections, so it isn't a real alternative either.)
+
+So: create it directly in the console.
 
 1. Push this repo to GitHub if you haven't already.
-2. AWS Console → Amplify → find the app (`AmplifyAppId` from the CDK output)
-   → "main" branch → connect it to your GitHub repository, authorizing
-   Amplify's GitHub App when prompted.
-3. Trigger a build (or push a commit) — it runs the build spec baked into
-   the app by CDK (`npm ci && npm run build` inside `frontend/`, artifact
-   `frontend/dist`).
+2. AWS Console → Amplify → **New app** → **Host a web app** (or similar
+   wording — this has been worded a few different ways across console
+   versions) → choose **GitHub** as the source, authorize the AWS Amplify
+   GitHub App if prompted, and select this repository and its branch.
+3. Since this repo is a monorepo (frontend/backend/infra all at the top
+   level), check **"My app is a monorepo"** and set the app root to
+   `frontend`.
+4. Accept the auto-detected build settings (`npm run build`, output
+   directory `dist`) — Amplify detects these correctly for a Vite app once
+   the app root is set.
+5. Under **Advanced settings → Environment variables**, add:
+   - `VITE_API_BASE_URL` → the `ApiUrl` CDK output
+   - `VITE_COGNITO_USER_POOL_ID` → the `UserPoolId` CDK output
+   - `VITE_COGNITO_CLIENT_ID` → the `UserPoolClientId` CDK output
+   - `VITE_AWS_REGION` → your deploy region
+6. Leave "Password protect my site", "Keep cookies in cache key", and SSR
+   options off — this is a plain static SPA.
+7. Save and deploy. Once it finishes, the app is live at
+   `https://<branch>.<appId>.amplifyapp.com`.
+8. Redeploy the CDK stack with that real domain as `frontendBaseUrl` (see
+   below) so CORS on the API and S3 bucket is scoped to it instead of
+   `localhost`.
 
 ## Wire up the frontend's own config for local development
 

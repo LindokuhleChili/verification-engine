@@ -51,7 +51,6 @@ public sealed partial class VerificationEngineStack : Stack
         BuildDeceasedEstateWorkflow(eventBus);
 
         BuildSesIdentity();
-        BuildFrontendHosting(apiUrl);
 
         EmitOutputs(apiUrl);
     }
