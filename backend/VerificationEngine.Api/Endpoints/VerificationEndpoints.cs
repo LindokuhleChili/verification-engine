@@ -43,7 +43,7 @@ public static class VerificationEndpoints
     {
         var claim = await repository.GetClaimAsync(claimId);
         if (claim is null) return Results.NotFound();
-        if (!await CanActOnClaim(claim, http, repository)) return Results.Forbid();
+        if (!await CanActOnClaim(claim, http, repository)) return Results.StatusCode(StatusCodes.Status403Forbidden);
 
         var upload = await documentStore.CreateUploadUrlAsync(claimId, request.DocumentType, request.ContentType);
         return Results.Ok(new CreateUploadUrlResponse(upload.DocumentId, upload.UploadUrl, upload.ExpiresAt));
@@ -55,7 +55,7 @@ public static class VerificationEndpoints
     {
         var claim = await repository.GetClaimAsync(claimId);
         if (claim is null) return Results.NotFound();
-        if (!await CanActOnClaim(claim, http, repository)) return Results.Forbid();
+        if (!await CanActOnClaim(claim, http, repository)) return Results.StatusCode(StatusCodes.Status403Forbidden);
 
         if (!await documentStore.ExistsAsync(request.S3Key))
             return Results.BadRequest(new { error = "The upload has not finished landing in storage yet. Please try again in a moment." });
@@ -80,7 +80,7 @@ public static class VerificationEndpoints
     {
         var aggregate = await repository.GetClaimAggregateAsync(claimId);
         if (aggregate is null) return Results.NotFound();
-        if (!ClaimAccess.CanView(aggregate.Claim, aggregate.Steps, CurrentUser.Id(http))) return Results.Forbid();
+        if (!ClaimAccess.CanView(aggregate.Claim, aggregate.Steps, CurrentUser.Id(http))) return Results.StatusCode(StatusCodes.Status403Forbidden);
 
         var selfie = aggregate.Documents.FirstOrDefault(d => d.DocumentId == request.SelfieDocumentId);
         var idDoc = aggregate.Documents.FirstOrDefault(d => d.DocumentId == request.IdDocumentDocumentId);
@@ -114,7 +114,7 @@ public static class VerificationEndpoints
     {
         var claim = await repository.GetClaimAsync(claimId);
         if (claim is null) return Results.NotFound();
-        if (claim.OwnerUserId != CurrentUser.Id(http)) return Results.Forbid();
+        if (claim.OwnerUserId != CurrentUser.Id(http)) return Results.StatusCode(StatusCodes.Status403Forbidden);
 
         var session = await stitch.StartLinkAsync(claimId);
 
@@ -135,7 +135,7 @@ public static class VerificationEndpoints
     {
         var claim = await repository.GetClaimAsync(claimId);
         if (claim is null) return Results.NotFound();
-        if (claim.OwnerUserId != CurrentUser.Id(http)) return Results.Forbid();
+        if (claim.OwnerUserId != CurrentUser.Id(http)) return Results.StatusCode(StatusCodes.Status403Forbidden);
 
         var expectedName = claim.ShareholderFullName ?? "Unknown";
         var result = await stitch.CompleteLinkAsync(request.SessionId, expectedName);
@@ -157,7 +157,7 @@ public static class VerificationEndpoints
     {
         var aggregate = await repository.GetClaimAggregateAsync(claimId);
         if (aggregate is null) return Results.NotFound();
-        if (!ClaimAccess.CanView(aggregate.Claim, aggregate.Steps, CurrentUser.Id(http))) return Results.Forbid();
+        if (!ClaimAccess.CanView(aggregate.Claim, aggregate.Steps, CurrentUser.Id(http))) return Results.StatusCode(StatusCodes.Status403Forbidden);
 
         var document = aggregate.Documents.FirstOrDefault(d => d.DocumentId == request.DocumentId);
         if (document is null) return Results.BadRequest(new { error = "That document has not been uploaded to this claim." });
@@ -184,7 +184,7 @@ public static class VerificationEndpoints
     {
         var claim = await repository.GetClaimAsync(claimId);
         if (claim is null) return Results.NotFound();
-        if (claim.OwnerUserId != CurrentUser.Id(http)) return Results.Forbid();
+        if (claim.OwnerUserId != CurrentUser.Id(http)) return Results.StatusCode(StatusCodes.Status403Forbidden);
 
         // The claimant has now reviewed every field, so what they confirm becomes the
         // record of truth even if it differs from what OCR originally read.
@@ -210,7 +210,7 @@ public static class VerificationEndpoints
     {
         var aggregate = await repository.GetClaimAggregateAsync(claimId);
         if (aggregate is null) return Results.NotFound();
-        if (aggregate.Claim.OwnerUserId != CurrentUser.Id(http)) return Results.Forbid();
+        if (aggregate.Claim.OwnerUserId != CurrentUser.Id(http)) return Results.StatusCode(StatusCodes.Status403Forbidden);
 
         // Signing generates the claim's final legal document, so every other required
         // step must already have passed - otherwise a claimant could sign (and get a
@@ -275,7 +275,7 @@ public static class VerificationEndpoints
     {
         var claim = await repository.GetClaimAsync(claimId);
         if (claim is null) return Results.NotFound();
-        if (claim.OwnerUserId != CurrentUser.Id(http)) return Results.Forbid();
+        if (claim.OwnerUserId != CurrentUser.Id(http)) return Results.StatusCode(StatusCodes.Status403Forbidden);
 
         var booking = await courier.BookCollectionAsync(claimId, "Address on file");
 
@@ -294,7 +294,7 @@ public static class VerificationEndpoints
     {
         var claim = await repository.GetClaimAsync(claimId);
         if (claim is null) return Results.NotFound();
-        if (claim.OwnerUserId != CurrentUser.Id(http)) return Results.Forbid();
+        if (claim.OwnerUserId != CurrentUser.Id(http)) return Results.StatusCode(StatusCodes.Status403Forbidden);
 
         // In production this would be a courier webhook, not a claimant click. Simulated
         // here because there is no real courier account to receive a real webhook from -
@@ -316,7 +316,7 @@ public static class VerificationEndpoints
     {
         var claim = await repository.GetClaimAsync(claimId);
         if (claim is null) return Results.NotFound();
-        if (claim.OwnerUserId != CurrentUser.Id(http)) return Results.Forbid();
+        if (claim.OwnerUserId != CurrentUser.Id(http)) return Results.StatusCode(StatusCodes.Status403Forbidden);
 
         return Results.Ok(await courier.TrackAsync(waybill));
     }

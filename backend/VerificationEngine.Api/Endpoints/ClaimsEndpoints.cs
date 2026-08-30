@@ -62,7 +62,7 @@ public static class ClaimsEndpoints
         var aggregate = await repository.GetClaimAggregateAsync(claimId);
         if (aggregate is null) return Results.NotFound();
         var viewerId = CurrentUser.Id(http);
-        if (!ClaimAccess.CanView(aggregate.Claim, aggregate.Steps, viewerId)) return Results.Forbid();
+        if (!ClaimAccess.CanView(aggregate.Claim, aggregate.Steps, viewerId)) return Results.StatusCode(StatusCodes.Status403Forbidden);
 
         return Results.Ok(aggregate.Claim.ToDetail(aggregate.Steps, aggregate.Documents, viewerId));
     }
@@ -72,7 +72,7 @@ public static class ClaimsEndpoints
     {
         var aggregate = await repository.GetClaimAggregateAsync(claimId);
         if (aggregate is null) return Results.NotFound();
-        if (aggregate.Claim.OwnerUserId != CurrentUser.Id(http)) return Results.Forbid();
+        if (aggregate.Claim.OwnerUserId != CurrentUser.Id(http)) return Results.StatusCode(StatusCodes.Status403Forbidden);
 
         var byName = aggregate.Steps.ToDictionary(s => s.Name, s => s.Status);
         if (!ClaimWorkflow.CanSubmit(aggregate.Claim.ClaimType, byName))
@@ -102,7 +102,7 @@ public static class ClaimsEndpoints
     {
         var claim = await repository.GetClaimAsync(claimId);
         if (claim is null) return Results.NotFound();
-        if (claim.OwnerUserId != CurrentUser.Id(http)) return Results.Forbid();
+        if (claim.OwnerUserId != CurrentUser.Id(http)) return Results.StatusCode(StatusCodes.Status403Forbidden);
         if (claim.GeneratedDocumentKey is null) return Results.NotFound(new { error = "No document has been generated for this claim yet." });
 
         var url = await documentStore.CreateDownloadUrlAsync(claim.GeneratedDocumentKey, TimeSpan.FromMinutes(10));

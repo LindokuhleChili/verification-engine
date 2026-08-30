@@ -25,7 +25,7 @@ public static class ExecutorEndpoints
     {
         var claim = await repository.GetClaimAsync(claimId);
         if (claim is null) return Results.NotFound();
-        if (claim.OwnerUserId != CurrentUser.Id(http)) return Results.Forbid();
+        if (claim.OwnerUserId != CurrentUser.Id(http)) return Results.StatusCode(StatusCodes.Status403Forbidden);
         if (claim.ClaimType != ClaimType.DeceasedEstate)
             return Results.BadRequest(new { error = "Only a Deceased Estate claim has an executor to invite." });
 
