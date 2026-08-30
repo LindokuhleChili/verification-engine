@@ -402,7 +402,12 @@ function CourierStep({ claim, onChanged }: { claim: ClaimDetail; onChanged: () =
 }
 
 function SignatureStep({ claim, onChanged }: { claim: ClaimDetail; onChanged: () => void }) {
-  const [signerName, setSignerName] = useState(claim.shareholderFullName ?? "");
+  // shareholderFullName is only the signer's own name for LivingShareholder and
+  // LostCertificate, where the shareholder is the one signing. For a Deceased Estate
+  // claim, shareholderFullName is the *deceased* person - the beneficiary or executor
+  // signing here is someone else entirely, so pre-filling it there would be wrong.
+  const defaultSignerName = claim.claimType === "DeceasedEstate" ? "" : (claim.shareholderFullName ?? "");
+  const [signerName, setSignerName] = useState(defaultSignerName);
   const [isBusy, setIsBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
