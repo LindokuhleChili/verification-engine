@@ -30,13 +30,18 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
     body: body === undefined ? undefined : JSON.stringify(body),
   });
 
+  // Read as text first rather than trusting the status code to predict whether a body
+  // is present - Results.Ok() with no argument, Results.NoContent(), and network-level
+  // truncation can all produce zero bytes on a 2xx, and calling .json() directly on an
+  // empty body throws "Unexpected end of JSON input" instead of a usable error.
+  const raw = await response.text();
+  const parsed = raw.length > 0 ? JSON.parse(raw) : undefined;
+
   if (!response.ok) {
-    const problem = await response.json().catch(() => null);
-    throw new ApiError(response.status, problem?.error ?? `Request to ${path} failed with status ${response.status}.`);
+    throw new ApiError(response.status, parsed?.error ?? `Request to ${path} failed with status ${response.status}.`);
   }
 
-  if (response.status === 204) return undefined as T;
-  return (await response.json()) as T;
+  return parsed as T;
 }
 
 export const api = {

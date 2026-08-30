@@ -71,7 +71,7 @@ public static class VerificationEndpoints
             UploadedByUserId = CurrentUser.Id(http)
         });
 
-        return Results.Ok();
+        return Results.NoContent();
     }
 
     private static async Task<IResult> CompareFaces(
@@ -201,7 +201,7 @@ public static class VerificationEndpoints
             Detail = "Extracted fields confirmed by claimant."
         });
 
-        return Results.Ok();
+        return Results.NoContent();
     }
 
     private static async Task<IResult> SubmitSignature(
@@ -307,7 +307,7 @@ public static class VerificationEndpoints
             Detail = MockNotice.Wrap("Original Letter of Executorship confirmed received by the processing team.")
         });
 
-        return Results.Ok();
+        return Results.NoContent();
     }
 
     private static async Task<IResult> TrackCourier(
