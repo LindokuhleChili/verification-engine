@@ -1,3 +1,4 @@
+using Amazon.CognitoIdentityProvider;
 using VerificationEngine.Api.Contracts;
 using VerificationEngine.Api.Security;
 using VerificationEngine.Domain.Claims;
@@ -22,13 +23,14 @@ public static class ClaimsEndpoints
     }
 
     private static async Task<IResult> CreateClaim(
-        HttpContext http, CreateClaimRequest request, IClaimRepository repository, IClaimEventPublisher events)
+        HttpContext http, CreateClaimRequest request, IClaimRepository repository, IClaimEventPublisher events,
+        IAmazonCognitoIdentityProvider cognito)
     {
         var claim = new Claim
         {
             ClaimId = Guid.NewGuid().ToString("N"),
             OwnerUserId = CurrentUser.Id(http),
-            OwnerEmail = CurrentUser.Email(http),
+            OwnerEmail = await CurrentUser.EmailAsync(http, cognito),
             ClaimType = request.ClaimType,
             Status = ClaimStatus.Draft,
             ShareholderFullName = request.ShareholderFullName,
@@ -44,7 +46,7 @@ public static class ClaimsEndpoints
             return Results.BadRequest(new { error = "That does not look like a valid South African ID number." });
 
         await repository.SaveClaimAsync(claim);
-        await events.PublishAsync(new ClaimEvent("ClaimCreated", new { claim.ClaimId, claim.ClaimType }));
+        await events.PublishAsync(new ClaimEvent("ClaimCreated", new { claim.ClaimId, ClaimType = claim.ClaimType.ToString() }));
 
         return Results.Created($"/claims/{claim.ClaimId}", claim.ToSummary());
     }
@@ -83,7 +85,14 @@ public static class ClaimsEndpoints
         // The deceased-estate Step Functions workflow (multi-party orchestration) picks
         // this event up off the shared bus; the other two claim types have nothing
         // listening yet at this event and complete synchronously when signed instead.
-        await events.PublishAsync(new ClaimEvent("ClaimSubmitted", new { aggregate.Claim.ClaimId, aggregate.Claim.ClaimType }));
+        //
+        // ClaimType is explicitly .ToString()'d here: this goes through
+        // EventBridgeClaimEventPublisher's own JsonSerializer.Serialize call, which
+        // (unlike the ASP.NET Core pipeline - see Program.cs) has no JsonStringEnumConverter
+        // configured, and the CDK stack's EventBridge rule pattern-matches this field as
+        // a literal string ("DeceasedEstate") - see VerificationEngineStack.Workflow.cs.
+        await events.PublishAsync(new ClaimEvent(
+            "ClaimSubmitted", new { aggregate.Claim.ClaimId, ClaimType = aggregate.Claim.ClaimType.ToString() }));
 
         return Results.Ok(aggregate.Claim.ToSummary());
     }

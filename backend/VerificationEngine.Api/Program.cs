@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+using Amazon.CognitoIdentityProvider;
 using Amazon.Lambda.AspNetCoreServer.Hosting;
 using QuestPDF.Infrastructure;
 using VerificationEngine.Api.Endpoints;
@@ -14,6 +16,14 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddAWSLambdaHosting(LambdaEventSource.HttpApi);
 
 builder.Services.AddVerificationEngineServices();
+builder.Services.AddSingleton<IAmazonCognitoIdentityProvider>(_ => new AmazonCognitoIdentityProviderClient());
+
+// System.Text.Json serializes enums as numbers by default. Every contract in
+// VerificationEngine.Api.Contracts sends enums like ClaimType across the wire as their
+// member name ("LivingShareholder"), and the frontend's TypeScript unions match those
+// names - so both directions need the string converter, not just responses.
+builder.Services.ConfigureHttpJsonOptions(options =>
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
 // API Gateway's HTTP API JWT authorizer has already verified the Cognito access token
 // before the request reaches Lambda; this only needs to know how to read the claims

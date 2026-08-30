@@ -28,3 +28,6 @@ src/aws-config.local.ts
 # OS
 .DS_Store
 Thumbs.db
+
+# Local agent/tooling state - not part of the project
+.claude/

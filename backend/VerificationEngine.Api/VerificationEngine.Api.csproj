@@ -5,6 +5,7 @@
   <ItemGroup>
     <PackageReference Include="Amazon.Lambda.AspNetCoreServer.Hosting" Version="2.2.1" />
     <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.3" />
+    <PackageReference Include="AWSSDK.CognitoIdentityProvider" Version="4.0.105" />
     <!-- QuestPDF (used by VerificationEngine.Services for document generation) renders
          text through SkiaSharp. Lambda's Amazon Linux image doesn't ship fontconfig/
          freetype, so the statically-linked "NoDependencies" native asset is required -
