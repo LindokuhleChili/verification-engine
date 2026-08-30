@@ -116,6 +116,20 @@ public sealed partial class VerificationEngineStack
             AuthorizerId = authorizer.AttrAuthorizerId
         });
 
+        // A browser's CORS preflight is never authenticated by design, but "ANY" (used
+        // above) matches OPTIONS too - without this more specific route, every preflight
+        // request hit the JWT authorizer, got a 401, and the browser reported the whole
+        // call as a generic "Failed to fetch" before the real request was ever sent. An
+        // exact method match (OPTIONS) takes priority over "ANY" for the same path, so
+        // this route intercepts preflight first; ASP.NET Core's own CORS middleware
+        // (UseCors() in Program.cs) then answers it directly, unauthenticated.
+        _ = new CfnRoute(this, "ProxyOptionsRoute", new CfnRouteProps
+        {
+            ApiId = httpApi.AttrApiId,
+            RouteKey = "OPTIONS /{proxy+}",
+            Target = integrationTarget
+        });
+
         // $default is the one HTTP API stage that needs no stage name in the invoke URL,
         // and AutoDeploy means every route/integration change above ships without a
         // separate CfnDeployment resource to manage.
