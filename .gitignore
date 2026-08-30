@@ -1,0 +1,30 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+[Dd]ebug/
+[Rr]elease/
+
+# CDK
+cdk.out/
+cdk.context.json
+*.d.ts
+infra/**/lambda-publish/
+
+# Node
+node_modules/
+dist/
+.vite/
+*.local
+
+# Env / secrets — never commit
+.env
+.env.*
+!.env.example
+aws-exports.js
+src/aws-config.local.ts
+
+# OS
+.DS_Store
+Thumbs.db

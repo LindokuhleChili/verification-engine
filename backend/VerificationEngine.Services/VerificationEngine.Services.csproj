@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <PackageReference Include="AWSSDK.DynamoDBv2" Version="4.0.103.5" />
+    <PackageReference Include="AWSSDK.S3" Version="4.0.102.4" />
+    <PackageReference Include="AWSSDK.Rekognition" Version="4.0.100.11" />
+    <PackageReference Include="AWSSDK.Textract" Version="4.0.100.11" />
+    <PackageReference Include="AWSSDK.SimpleEmailV2" Version="4.0.103.1" />
+    <PackageReference Include="AWSSDK.EventBridge" Version="4.0.100.11" />
+    <PackageReference Include="QuestPDF" Version="2026.8.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.2" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../VerificationEngine.Domain/VerificationEngine.Domain.csproj" />
+  </ItemGroup>
+</Project>

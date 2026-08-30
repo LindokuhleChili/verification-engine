@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/backend/">
+    <Project Path="backend/VerificationEngine.Api/VerificationEngine.Api.csproj" />
+    <Project Path="backend/VerificationEngine.Domain/VerificationEngine.Domain.csproj" />
+    <Project Path="backend/VerificationEngine.Services/VerificationEngine.Services.csproj" />
+    <Project Path="backend/VerificationEngine.Tests/VerificationEngine.Tests.csproj" />
+    <Project Path="backend/VerificationEngine.Workers/VerificationEngine.Workers.csproj" />
+  </Folder>
+  <Folder Name="/infra/">
+    <Project Path="infra/VerificationEngine.Infra/VerificationEngine.Infra.csproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Amplify Hosting is wired up with the stable L1 CfnApp/CfnBranch constructs
+         rather than the aws-amplify-alpha package: that package's GitHub source-provider
+         API has churned as GitHub deprecated OAuth-token app connections in favour of
+         its GitHub App integration, which can only be authorized interactively in the
+         console anyway - see docs/DEPLOYING.md. CfnApp avoids depending on an alpha
+         package for something that gets manually finished in the console either way. -->
+    <PackageReference Include="Amazon.CDK.Lib" Version="2.267.0" />
+    <PackageReference Include="Constructs" Version="10.8.1" />
+  </ItemGroup>
+</Project>
