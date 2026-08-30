@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { PageShell } from "../components/PageShell";
 import { useAuth } from "../hooks/useAuth";
+import heroImage from "../assets/landing-hero.jpg";
 
 export function Landing() {
   const { isAuthenticated } = useAuth();
@@ -48,14 +49,13 @@ export function Landing() {
             </div>
           </div>
           <div className="relative lg:col-span-6">
-            <div className="relative mx-auto flex aspect-square w-full max-w-lg items-center justify-center rounded-xl border border-border-hairline bg-bg-surface p-8 shadow-[0px_8px_24px_rgba(27,36,48,0.08)]">
+            <div className="relative mx-auto aspect-square w-full max-w-lg overflow-hidden rounded-xl border border-border-hairline bg-bg-surface p-8 shadow-[0px_8px_24px_rgba(27,36,48,0.08)]">
               <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-bg-subtle to-bg-surface" />
-              <div className="relative z-10 flex h-full w-full flex-col items-center justify-center gap-6 rounded-lg border border-dashed border-border-hairline">
-                <span className="material-symbols-outlined text-6xl text-accent-verified">verified_user</span>
-                <p className="max-w-[220px] text-center font-body text-body-md text-ink-secondary">
-                  Biometric identity checks replace certified copies and affidavit stamps.
-                </p>
-              </div>
+              <img
+                src={heroImage}
+                alt="Abstract render of overlapping glass and marble planes in white and emerald green, evoking secure digital identity verification"
+                className="relative z-10 h-full w-full rounded-lg object-cover mix-blend-multiply"
+              />
             </div>
           </div>
         </div>
