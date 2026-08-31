@@ -36,6 +36,17 @@ export function SelfieCameraField({ claimId, documentType, label, helpText, onUp
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // The <video> element only exists in the DOM once phase is "live" (see the JSX
+  // below), so the stream can't be attached to it inside startCamera - videoRef.current
+  // is still null at that point. Attaching it here, after the phase flip has actually
+  // mounted the element, is what makes the preview show up.
+  useEffect(() => {
+    if (phase === "live" && videoRef.current && streamRef.current) {
+      videoRef.current.srcObject = streamRef.current;
+      void videoRef.current.play();
+    }
+  }, [phase]);
+
   function stopStream() {
     streamRef.current?.getTracks().forEach((track) => track.stop());
     streamRef.current = null;
@@ -53,10 +64,6 @@ export function SelfieCameraField({ claimId, documentType, label, helpText, onUp
         video: { facingMode: "user", width: { ideal: 720 }, height: { ideal: 720 } },
       });
       streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play();
-      }
       setPhase("live");
     } catch {
       setPhase("unavailable");
