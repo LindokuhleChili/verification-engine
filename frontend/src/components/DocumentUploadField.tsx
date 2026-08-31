@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { api, uploadToPresignedUrl } from "../lib/api";
+import { uploadDocument } from "../lib/documentUpload";
 import type { DocumentType } from "../types/domain";
 
 interface DocumentUploadFieldProps {
@@ -37,24 +37,9 @@ export function DocumentUploadField({
     setFileName(file.name);
 
     try {
-      const upload = await api.post<{ documentId: string; uploadUrl: string; expiresAt: string }>(
-        `/claims/${claimId}/documents/upload-url`,
-        { documentType, contentType: file.type || "application/octet-stream" },
-      );
-
-      await uploadToPresignedUrl(upload.uploadUrl, file);
-
-      const s3Key = new URL(upload.uploadUrl).pathname.replace(/^\//, "");
-      await api.post(`/claims/${claimId}/documents/confirm`, {
-        documentId: upload.documentId,
-        documentType,
-        s3Key,
-        contentType: file.type || "application/octet-stream",
-        sizeBytes: file.size,
-      });
-
+      const documentId = await uploadDocument(claimId, documentType, file);
       setStatus("done");
-      onUploaded(upload.documentId);
+      onUploaded(documentId);
     } catch (err) {
       setStatus("error");
       setError(err instanceof Error ? err.message : "The upload failed. Please try again.");

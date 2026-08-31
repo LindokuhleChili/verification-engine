@@ -6,6 +6,7 @@ import { Button } from "../components/Button";
 import { StepIndicator } from "../components/StepIndicator";
 import { StepStatusBadge, ClaimStatusBadge } from "../components/StatusBadge";
 import { DocumentUploadField } from "../components/DocumentUploadField";
+import { SelfieCameraField } from "../components/SelfieCameraField";
 import { SignaturePad } from "../components/SignaturePad";
 import { api } from "../lib/api";
 import { CLAIM_TYPE_LABELS, formatRands, type ClaimDetail, type StepResponse } from "../types/domain";
@@ -146,12 +147,11 @@ function IdentityStep({ claim, onChanged }: { claim: ClaimDetail; onChanged: () 
         helpText="Upload a clear photo of your SA ID card or green book"
         onUploaded={setIdDocId}
       />
-      <DocumentUploadField
+      <SelfieCameraField
         claimId={claim.claimId}
         documentType="Selfie"
         label="A selfie"
-        helpText="Take a clear photo of your face"
-        cameraFacing="user"
+        helpText="Take a clear photo of your face using your camera"
         onUploaded={setSelfieId}
       />
       <Button disabled={!selfieId || !idDocId || isComparing} onClick={() => void compare()}>
